@@ -1,0 +1,60 @@
+<RCC>
+  <qresource prefix="/">
+    <file>images/trigger.png</file>
+    <file>images/开始.png</file>
+    <file>images/暂停.png</file>
+    <file>images/FPS 960.png</file>
+    <file>images/增益均衡器.png</file>
+    <file>images/曝光.png</file>
+    <file>images/关节压力.png</file>
+    <file>images/关节状态.png</file>
+    <file>images/关节角度.png</file>
+    <file>images/状态.png</file>
+    <file>images/温度.png</file>
+    <file>images/闭环.png</file>
+    <file>images/速度_speed8.png</file>
+    <file>images/IP地址.png</file>
+    <file>images/ivision 智能视觉.png</file>
+    <file>images/传感器.png</file>
+    <file>images/关阀.png</file>
+    <file>images/搜索设备.png</file>
+    <file>images/功能.png</file>
+    <file>images/延时.png</file>
+    <file>images/开阀.png</file>
+    <file>images/打开文件夹.png</file>
+    <file>images/断开连接.png</file>
+    <file>images/机器人.png</file>
+    <file>images/电压.png</file>
+    <file>images/电流.png</file>
+    <file>images/端口.png</file>
+    <file>images/系统信息.png</file>
+    <file>images/连接.png</file>
+    <file>images/重试.png</file>
+    <file>images/断开连接.png</file>
+    <file>images/连接.png</file>
+    <file>images/ivision 智能视觉.png</file>
+    <file>images/传感器.png</file>
+    <file>images/关阀.png</file>
+    <file>images/功能.png</file>
+    <file>images/开阀.png</file>
+    <file>images/打开文件夹.png</file>
+    <file>images/机器人.png</file>
+    <file>images/电压.png</file>
+    <file>images/电流.png</file>
+    <file>images/系统信息.png</file>
+    <file>images/关阀.png</file>
+    <file>images/开阀.png</file>
+    <file>images/打开文件夹.png</file>
+    <file>images/机器人.png</file>
+    <file>images/电压.png</file>
+    <file>images/电流.png</file>
+    <file>images/系统信息.png</file>
+    <file>images/打开文件夹.png</file>
+    <file>images/机器人.png</file>
+    <file>images/关阀.png</file>
+    <file>images/开阀.png</file>
+    <file>images/系统信息.png</file>
+    <file>images/设置.png</file>
+    <file>images/保存.png</file>
+  </qresource>
+</RCC>
