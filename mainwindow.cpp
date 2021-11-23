@@ -368,13 +368,13 @@ void MainWindow::data_show(QModbusReply *reply)
             //工作状态
             switch (receiveData.mid(16,2).toHex().toInt(&ok,16)) {
             case 0:
-                label_joint_1_status_value->setText(QStringLiteral("正常"));
+                label_joint_2_status_value->setText(QStringLiteral("正常"));
                 break;
             case 1:
-                label_joint_1_status_value->setText(QStringLiteral("比例阀模块错误"));
+                label_joint_2_status_value->setText(QStringLiteral("比例阀模块错误"));
                 break;
             case 2:
-                label_joint_1_status_value->setText(QStringLiteral("参数错误"));
+                label_joint_2_status_value->setText(QStringLiteral("参数错误"));
                 break;
             }
             //角度传感器

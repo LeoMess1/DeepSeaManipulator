@@ -205,6 +205,7 @@ int MyCamera::grabThreadProcess()
     while(m_bThreadState)
     {
         int nRet = m_pcMyCamera->GetImageBuffer(&stImageInfo, 1000);
+//        int nRet = 0;
         if (nRet == MV_OK)
         {
             //ÓÃÓÚ±£´æÍ¼Æ¬

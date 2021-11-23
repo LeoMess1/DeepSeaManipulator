@@ -4,18 +4,18 @@ CONFIG += c++11
 INCLUDEPATH += \
     D:\MVS\Development\Includes
 INCLUDEPATH += \
-    $$quote(E:\VS2019 WorkSpace\Work\DeepSeaController\public)
+    $$quote(E:\Qt Workspace\Work\DeepSeaManipulator\includes)
 
 #TARGET = adueditor
 QT += serialbus widgets
-QT += serialbus-private core-private
+#QT += serialbus-private core-private
 requires(qtConfig(combobox))
-requires(qtConfig(modbus-serialport))
+#requires(qtConfig(modbus-serialport))
 
 LIBS += \
     -LD:\MVS\Development\Libraries\win64 -lMvCameraControl
 LIBS += \
-    -L$$quote(E:\VS2019 WorkSpace\Work\DeepSeaController\Debug) -lDeepSeaController
+    -L$$quote(E:\Qt Workspace\Work\DeepSeaManipulator\lib) -lDeepSeaController
 
 SOURCES += \
     MvCamera.cpp \

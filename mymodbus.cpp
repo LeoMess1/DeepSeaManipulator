@@ -196,7 +196,8 @@ void MyModbus::readData()
 
     //发送
     QModbusReply *reply_read = nullptr;
-    reply_read = modbusDevice->sendRawRequest(QModbusRequest(QModbusRequest::FunctionCode(QModbusPdu::ReadInputRegisters), pduData_read), quint8(1));
+    reply_read = modbusDevice->sendRawRequest(QModbusRequest(
+             QModbusRequest::FunctionCode(QModbusPdu::ReadInputRegisters), pduData_read),quint8(1));
 
     //reply必须在执行完finished之后才会有返回数据
     //If the request has not finished then the returned QModbusResponse instance is invalid.
@@ -217,8 +218,8 @@ void MyModbus::readData()
                 //                emit readButtonSetSignal(true);
 
                 //将数据的处理显示交给一个线程去做
-                //                QByteArray receiveData;
-                //                QDataStream receiveStream(&receiveData,QIODevice::WriteOnly);
+//                QByteArray receiveData;
+//                QDataStream receiveStream(&receiveData,QIODevice::WriteOnly);
                 //                receiveStream << reply_read->rawResult(); //写在外部函数中只能用这种形式
                 //                emit sendDataToProcess(receiveData);
                 emit sendDataToProcess(reply_read);
@@ -341,27 +342,27 @@ QByteArray MyModbus::generatePdu(QString point, int *gripperList)
     quint16 joints_value = quint16(round(pointSep.at(0).toFloat()*100));
     pduDataString << joints_value;
 
-    /**********************关节2(大臂关节)配置和输入值**********************/
+    /*********************关节2(大臂关节)配置和输入值**********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(1).toFloat()*100));
     pduDataString << joints_value;
 
-    /**********************关节3(小臂关节)配置和输入值**********************/
+    /*********************关节3(小臂关节)配置和输入值**********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(2).toFloat()*100));
     pduDataString << joints_value;
 
-    /***********************关节4(肘关节)配置和输入值***********************/
+    /**********************关节4(肘关节)配置和输入值***********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(3).toFloat()*100));
     pduDataString << joints_value;
 
-    /*********************关节5(手腕摆动关节)配置和输入值*********************/
+    /********************关节5(手腕摆动关节)配置和输入值*********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(4).toFloat()*100));
     pduDataString << joints_value;
 
-    /*********************关节6(手腕旋转关节)配置和输入值*********************/
+    /********************关节6(手腕旋转关节)配置和输入值*********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(5).toFloat()*100));
     pduDataString << joints_value;
@@ -394,7 +395,8 @@ void MyModbus::moveToPoint(QByteArray pduData)
     //        QueryPerformanceFrequency(&nFreq);
     //        QueryPerformanceCounter(&t1);
 
-    reply_move = modbusDevice->sendRawRequest(QModbusRequest(QModbusRequest::FunctionCode(QModbusPdu::WriteMultipleRegisters), pduData), quint8(1));
+    reply_move = modbusDevice->sendRawRequest(QModbusRequest(
+           QModbusRequest::FunctionCode(QModbusPdu::WriteMultipleRegisters),pduData),quint8(1));
     if (reply_move) {
         //        emit execButtonSetSignal(false);
         if (!reply_move->isFinished()) {
@@ -402,13 +404,15 @@ void MyModbus::moveToPoint(QByteArray pduData)
             //Returns true when the reply has finished or was aborted
             connect(reply_move, &QModbusReply::finished, [reply_move, this]() {
                 emit execButtonSetSignal(true);
-                qDebug() << "Receive: Asynchronous response PDU: " << reply_move->rawResult() << Qt::endl;
+                qDebug() << "Receive: Asynchronous response PDU: "
+                         << reply_move->rawResult() << Qt::endl;
             });
         }
         else
         {
             //            emit execButtonSetSignal(true);
-            qDebug() << "Receive: Synchronous response pdu: " << reply_move->rawResult() << Qt::endl;
+            qDebug() << "Receive: Synchronous response pdu: "
+                     << reply_move->rawResult() << Qt::endl;
         }
     }
     //        QueryPerformanceCounter(&t2);

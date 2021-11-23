@@ -102,8 +102,8 @@ private:
     /************************TCP相关参数变量***********************/
     int                time_out                         = 100;
     int                number_retries                   = 0;
-//    QString            tcp_address                      = QStringLiteral("192.168.0.240");
-    QString            tcp_address                      = QStringLiteral("127.0.0.1");
+    QString            tcp_address                      = QStringLiteral("192.168.0.240");
+//    QString            tcp_address                      = QStringLiteral("127.0.0.1");
     QString            tcp_port                         = QStringLiteral("502");
 
     /**************************相关计时器***************************/
