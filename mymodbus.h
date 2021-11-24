@@ -14,6 +14,9 @@ class MyModbus : public QObject
     Q_OBJECT
 public:
     explicit MyModbus(QObject *parent = nullptr);
+    int                 gripper_set[3]                    = {0,0,391};
+    double              trajectory_planed[6] = {0,0,0,0,0,0};
+    bool flag;
 
 signals:
     /******************子线程对主线程UI进行操作的信号***********************/
@@ -30,6 +33,7 @@ signals:
     void getUi1SpinValue(int);
     void setL2SpinValue(int);
     void sendDataToProcess(QModbusReply *reply);//发送反馈的数据给主线程处理
+    void saveWriteDataSignal(double*);
 
 
 public slots:
@@ -53,6 +57,7 @@ public slots:
     void getThreePointList(QStringList);    //从主线程获取三点连发的QStringList
     void getLinePointsList(QStringList);
     QByteArray generatePdu(QString, int[]); //生成每一帧数据的PDU部分
+    QByteArray generatePdu(double[],int[]);
     void moveToPoint(QByteArray);           //位置控制实现（给定点）
     void moveToP1Clicked();
     void moveToP1();                        //发送P1点的实现
@@ -67,6 +72,7 @@ public slots:
     void moveToPointsSequenceDiverse();
     void moveToPointsSequenceDiverseClicked();
     void stopMoveToPointsSequence();
+    void trajectoryPlanStart();             //路径规划开始
 
     /**********************手爪************************/
     void getGripperSpeed(int);              //手爪速度
@@ -79,12 +85,15 @@ public slots:
 
 private:
 
+    void trajectoryPlan();                  //执行路径规划的点
+
     /************************定时器常量*****************************/
     const int     TIMER_MASTER_VALVE                = 50;
-    const int     TIMER_READ                        = 25;
+    const int     TIMER_READ                        = 5;
     const int     TIMER_THREE_POINTS_SEND           = 25;
     const int     TIMER_THREE_POINTS_SWITCH         = 5000;
     const int     TIMER_POINTS_SEQUENCE_SEND        = 25;
+    const int     TIMER_TRAJECTORY_PLAN             = 5;
     /************************标志常量*****************************/
     const int     FLAG_THREE_POINTS_UPPER_BOUND     = 3333;
     const int     FLAG_UPPER_BOUND_READ_WRITE_POLL  = 32596;//读写指令轮询发送的切换标志的上界
@@ -115,6 +124,7 @@ private:
     QTimer            *timer_three_points               = new QTimer(this);//循环发送三个点
     QTimer            *timer_points_sequence            = new QTimer(this);//发送点序列
     QTimer            *timer_points_sequence_diverse    = new QTimer(this);//逆序发送点序列
+    QTimer            *timer_trajectory_plan            = new QTimer(this);
 
     QStringList       three_points_string_list;
     QStringList       line_points;
@@ -128,7 +138,6 @@ private:
     int               line_flag                         = 0;
     int               line_flag_diverse                 = 0;
     int               gripper_speed_level               = 2;
-    int               gripper_set[3]                    = {0,0,391};
 };
 
 #endif // MYMODBUS_H

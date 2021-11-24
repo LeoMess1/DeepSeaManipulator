@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1305</width>
+    <width>1279</width>
     <height>892</height>
    </rect>
   </property>
@@ -55,7 +55,7 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
+    <item row="0" column="1">
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -102,7 +102,7 @@ rgb(0, 0, 0)</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="iconSize">
        <size>
@@ -1002,165 +1002,224 @@ rgb(0, 0, 0)</string>
         <string>功能测试</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="1" column="2">
-         <widget class="QGroupBox" name="groupBox_18">
-          <property name="title">
-           <string>GroupBox</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QGroupBox" name="groupBox_2">
           <property name="title">
            <string>单点测试</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_15">
-           <item row="0" column="0">
-            <layout class="QVBoxLayout" name="verticalLayout_12">
+           <item row="5" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_16">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_10">
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_13">
-                 <item>
-                  <widget class="QPushButton" name="pushButton_getThreePointsFileDir">
-                   <property name="text">
-                    <string>目标点文件：</string>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="res.qrc">
-                     <normaloff>:/images/打开文件夹.png</normaloff>:/images/打开文件夹.png</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="lineEdit_pointsDir">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_14">
-                 <item>
-                  <widget class="QPushButton" name="pushButton_getThreePoints">
-                   <property name="text">
-                    <string>获取多个点</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_autoMove">
-                   <property name="text">
-                    <string>依次到达</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_stopSendPoint">
-                   <property name="text">
-                    <string>停止</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
+              <widget class="QPushButton" name="pushButton_moveToP2">
+               <property name="text">
+                <string>P2</string>
+               </property>
+              </widget>
              </item>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_11">
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_2">
-                 <item>
-                  <widget class="QPushButton" name="pushButton_moveToP1">
-                   <property name="text">
-                    <string>P1</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="lineEdit_P1">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_trajectoryPlan">
-                 <property name="text">
-                  <string>规划</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_trajectoryExecute">
-                 <property name="text">
-                  <string>执行</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_16">
-                 <item>
-                  <widget class="QPushButton" name="pushButton_moveToP2">
-                   <property name="text">
-                    <string>P2</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="lineEdit_P2">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_15">
-                 <item>
-                  <widget class="QPushButton" name="pushButton_moveToP3">
-                   <property name="text">
-                    <string>P3</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="lineEdit_P3">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
+              <widget class="QLineEdit" name="lineEdit_P2">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QPushButton" name="pushButton_setJointsSpeed">
+               <property name="text">
+                <string>关节速度</string>
+               </property>
+               <property name="icon">
+                <iconset resource="res.qrc">
+                 <normaloff>:/images/速度_speed8.png</normaloff>:/images/速度_speed8.png</iconset>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_jointsSpeed">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_trajectoryPlan">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>规划</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QPushButton" name="pushButton_getTrajectorySaveDirectory">
+               <property name="text">
+                <string>保存路径：</string>
+               </property>
+               <property name="icon">
+                <iconset resource="res.qrc">
+                 <normaloff>:/images/打开文件夹.png</normaloff>:/images/打开文件夹.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_trajectorySaveDirectory"/>
+             </item>
+            </layout>
+           </item>
+           <item row="6" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_15">
+             <item>
+              <widget class="QPushButton" name="pushButton_moveToP3">
+               <property name="text">
+                <string>P3</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_P3">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_13">
+             <item>
+              <widget class="QPushButton" name="pushButton_getThreePointsFileDir">
+               <property name="text">
+                <string>目标文件：</string>
+               </property>
+               <property name="icon">
+                <iconset resource="res.qrc">
+                 <normaloff>:/images/打开文件夹.png</normaloff>:/images/打开文件夹.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_pointsDir">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="2" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <widget class="QPushButton" name="pushButton_getThreePoints">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>获取目标点</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_autoMove">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>循环到达</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_stopSendPoint">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>停止</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="3" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QPushButton" name="pushButton_moveToP1">
+               <property name="text">
+                <string>P1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_P1">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
           </layout>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QGroupBox" name="groupBox_15">
-          <property name="title">
-           <string>GroupBox</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1">
          <widget class="QGroupBox" name="groupBox_17">
-          <property name="title">
-           <string>GroupBox</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QGroupBox" name="groupBox_19">
           <property name="title">
            <string>GroupBox</string>
           </property>
@@ -1690,64 +1749,60 @@ rgb(0, 0, 0)</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
-         <widget class="QGroupBox" name="groupBox_16">
+        <item row="2" column="1">
+         <widget class="QGroupBox" name="groupBox_15">
           <property name="title">
            <string>GroupBox</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
+        <item row="1" column="0">
          <widget class="QGroupBox" name="groupBox_3">
           <property name="title">
            <string>序列测试</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_10">
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="1" column="0">
+            <widget class="QPushButton" name="pushButton_autoMoveLine">
+             <property name="text">
+              <string>顺序执行</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="pushButton_getPointsSequenceDirectory">
+             <property name="text">
+              <string>点序列文件：</string>
+             </property>
+             <property name="icon">
+              <iconset resource="res.qrc">
+               <normaloff>:/images/打开文件夹.png</normaloff>:/images/打开文件夹.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="pushButton_getPointsSequence">
+             <property name="text">
+              <string>获取点序列</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="pushButton_stopLine">
+             <property name="text">
+              <string>停止</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="pushButton_autoMoveLineDiverse">
+             <property name="text">
+              <string>倒序执行</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="1">
-            <layout class="QGridLayout" name="gridLayout_9">
-             <item row="0" column="2">
-              <widget class="QPushButton" name="pushButton_getPointsSequence">
-               <property name="text">
-                <string>获取点序列</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="lineEdit_pointsListDir"/>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="pushButton_autoMoveLineDiverse">
-               <property name="text">
-                <string>倒序执行</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QPushButton" name="pushButton_autoMoveLine">
-               <property name="text">
-                <string>顺序执行</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="pushButton_stopLine">
-               <property name="text">
-                <string>停止</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QPushButton" name="pushButton_getPointsSequenceDirectory">
-               <property name="text">
-                <string>点序列文件：</string>
-               </property>
-               <property name="icon">
-                <iconset resource="res.qrc">
-                 <normaloff>:/images/打开文件夹.png</normaloff>:/images/打开文件夹.png</iconset>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <widget class="QLineEdit" name="lineEdit_pointsListDir"/>
            </item>
           </layout>
          </widget>
@@ -2037,6 +2092,19 @@ rgb(0, 0, 0)</string>
       </widget>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="Line" name="line_4">
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
@@ -2065,7 +2133,7 @@ rgb(0, 0, 0)</string>
      <normaloff>:/images/设置.png</normaloff>:/images/设置.png</iconset>
    </property>
    <property name="floating">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
@@ -2091,68 +2159,67 @@ rgb(0, 0, 0)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="0" column="0">
-         <widget class="QPushButton" name="pushButton_saveDirectory">
-          <property name="text">
-           <string>文件：</string>
-          </property>
-          <property name="icon">
-           <iconset resource="res.qrc">
-            <normaloff>:/images/打开文件夹.png</normaloff>:/images/打开文件夹.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="pushButton_saveDirectory">
+            <property name="text">
+             <string>文件：</string>
+            </property>
+            <property name="icon">
+             <iconset resource="res.qrc">
+              <normaloff>:/images/打开文件夹.png</normaloff>:/images/打开文件夹.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_fileSaveAddress"/>
+          </item>
+         </layout>
         </item>
-        <item row="4" column="1">
-         <widget class="QPushButton" name="pushButton_stopSave">
-          <property name="text">
-           <string>停止记录</string>
-          </property>
-         </widget>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QPushButton" name="pushButton_read">
+            <property name="text">
+             <string>读取</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_saveOnce">
+            <property name="text">
+             <string>记录</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="3" column="0">
-         <widget class="QPushButton" name="pushButton_read">
-          <property name="text">
-           <string>读取</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QPushButton" name="pushButton_saveCont">
-          <property name="text">
-           <string>连续记录</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QPushButton" name="pushButton_saveOnce">
-          <property name="text">
-           <string>记录</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QLineEdit" name="lineEdit_fileSaveAddress"/>
+        <item row="2" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QPushButton" name="pushButton_saveCont">
+            <property name="text">
+             <string>连续记录</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_stopSave">
+            <property name="text">
+             <string>停止记录</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
-     </item>
-     <item row="1" column="0">
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item row="0" column="0">
       <widget class="QGroupBox" name="settingsBox">
@@ -2663,6 +2730,19 @@ rgb(0, 0, 0)</string>
      </item>
      <item row="3" column="0">
       <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="0">
+      <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>

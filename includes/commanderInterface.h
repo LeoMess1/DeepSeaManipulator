@@ -2,12 +2,14 @@
 #define COMMANDERINTERFACE_H_H
 #define COMMANDERINTERFACE commanderInterface::Instance()
 #include "commander_list_interface.h"
+#include "mymodbus.h"
 
 class commanderInterface:public Icommander_list
 {
 
 public:
 	static Icommander_list* Instance();
+    void init(MyModbus * myModbus);
 	//显示消息接口
 public:
 	virtual int displayForceSensorResult(int state); //控制器向界面发送六维力负载大小，以及碰撞检测结果
@@ -23,7 +25,7 @@ public:
 
 private:
 	commanderInterface();
-
+    MyModbus * myModbus_;
 private:
 	static Icommander_list* instance_;
 };

@@ -35,6 +35,7 @@ MyModbus::MyModbus(QObject *parent) : QObject(parent)
         }
         i++;
     });
+    connect(timer_trajectory_plan,&QTimer::timeout,this,&MyModbus::trajectoryPlan);
 }
 
 void MyModbus::startWork()
@@ -47,11 +48,11 @@ void MyModbus::connectModbus()
     modbusDevice = new ModbusTcpClient;
 
     qDebug()<<"connect";
-    qDebug()<<QStringLiteral("显示plc线程ID:")<<QThread::currentThread();  //显示当前线程的数值
+    qDebug()<<QStringLiteral("plcID:")<<QThread::currentThread();  //
 
     if(modbusDevice->state()!=QModbusDevice::ConnectedState)
     {
-        //设置modbusTCP客户端相关参数
+        //modbusTCP
         modbusDevice->setConnectionParameter(QModbusDevice::NetworkAddressParameter,tcp_address);
         modbusDevice->setConnectionParameter(QModbusDevice::NetworkPortParameter,tcp_port);
         modbusDevice->setTimeout(time_out);
@@ -62,42 +63,42 @@ void MyModbus::connectModbus()
             disconnectModbus();
         }, Qt::QueuedConnection);
 
-        //modbus对象状态改变的触发函数
+        //modbus
         connect(modbusDevice, &QModbusDevice::stateChanged, [](QModbusDevice::State state) {
             switch (state) {
-            case QModbusDevice::UnconnectedState://未连接
+            case QModbusDevice::UnconnectedState://δ
                 qDebug().noquote() << QStringLiteral("State: Entered unconnected state.");
                 break;
-            case QModbusDevice::ConnectingState://正在连接
+            case QModbusDevice::ConnectingState://
                 qDebug().noquote() << QStringLiteral("State: Entered connecting state.");
                 break;
-            case QModbusDevice::ConnectedState://已连接
+            case QModbusDevice::ConnectedState://
                 qDebug().noquote() << QStringLiteral("State: Entered connected state.");
                 break;
-            case QModbusDevice::ClosingState://关闭
+            case QModbusDevice::ClosingState://
                 qDebug().noquote() << QStringLiteral("State: Entered closing state.");
                 break;
             }
         });
-        //连接设备
+        //豸
         modbusDevice->connectDevice();
     }
-    timer_read->start(TIMER_READ);//连接上就自动读取
+    timer_read->start(MyModbus::TIMER_READ);//
 }
 
 void MyModbus::disconnectModbus()
 {
-    //停止读取定时器
+    //
     if(timer_read->isActive())
         timer_read->stop();
 
-    modbusDevice->disconnect();//断开与当前modbus对象的所有信号连接
-    modbusDevice->disconnectDevice();//断开与modbus设备的连接
+    modbusDevice->disconnect();//modbus
+    modbusDevice->disconnectDevice();//modbus豸
     delete modbusDevice;
     modbusDevice = nullptr;
 }
 
-//停止所有定时器
+//ж
 void MyModbus::stopAllTimers()
 {
     if(timer_master_valve->isActive())
@@ -118,27 +119,27 @@ void MyModbus::stopAllTimers()
         timer_points_sequence_diverse->stop();
 }
 
-//发送总阀使能的实现
+//
 void MyModbus::MasterValve()
 {
     QByteArray pduData;
     QDataStream pduDataString(&pduData,QIODevice::WriteOnly);
 
-    //使用数据流的形式构造写入的pdu
-    quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//起始地址
-    quint16 registerNum = quint16(13);//写入寄存器数量,可以少，不能多
-    quint8 byteLength = quint8(26);//写入字节数
-    quint16 open = 0x0001;//总阀使能
+    //дpdu
+    quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//
+    quint16 registerNum = quint16(13);//д,
+    quint8 byteLength = quint8(26);//д
+    quint16 open = 0x0001;//
 
     pduDataString  << startAddress << registerNum << byteLength << open;
 
-    quint32 jointSet = 0x80000000;//各关节使能关闭
+    quint32 jointSet = 0x80000000;//
 
     pduDataString << jointSet<< jointSet<< jointSet<< jointSet<< jointSet<< jointSet;
 
     modbusDevice->valueChanged(pduData.size()+2);//33
 
-    QModbusReply *reply_move = nullptr;//写操作的响应
+    QModbusReply *reply_move = nullptr;//д
 
     qDebug() << "Send: Sending custom PDU.";
 
@@ -157,7 +158,7 @@ void MyModbus::MasterValve()
     }
 }
 
-//开始对总阀使能的发送
+//
 void MyModbus::masterValveEnable()
 {
     //    MasterValve();
@@ -165,28 +166,28 @@ void MyModbus::masterValveEnable()
         timer_master_valve->start(MyModbus::TIMER_MASTER_VALVE);
 }
 
-//停止对总阀使能的发送
+//
 void MyModbus::masterValveUnable()
 {
     if(timer_master_valve->isActive())
         timer_master_valve->stop();
 }
 
-//读取传感器数据
+//
 void MyModbus::readData()
 {
     QByteArray pduData_read;
     QDataStream pduDataString(&pduData_read,QIODevice::WriteOnly);
 
-    //使用数据流的形式构造pdu
-    quint16 startAddress = READ_INSTRUCTIONS_START_ADDRESS;//***************起始地址
-    //添加六维力传感器的数据部分
-    quint16 registerNum = 0x1F;//***************寄存器数量
+    //pdu
+    quint16 startAddress = READ_INSTRUCTIONS_START_ADDRESS;//***************
+    //
+    quint16 registerNum = 0x1F;//***************
     pduDataString << startAddress << registerNum;
 
     modbusDevice->valueChanged(pduData_read.size()+2);//0x06
 
-    //计时开始
+    //
     //    LARGE_INTEGER nFreq;
     //    LARGE_INTEGER t1;
     //    LARGE_INTEGER t2;
@@ -194,97 +195,97 @@ void MyModbus::readData()
     //    QueryPerformanceFrequency(&nFreq);
     //    QueryPerformanceCounter(&t1);
 
-    //发送
+    //
     QModbusReply *reply_read = nullptr;
     reply_read = modbusDevice->sendRawRequest(QModbusRequest(
              QModbusRequest::FunctionCode(QModbusPdu::ReadInputRegisters), pduData_read),quint8(1));
 
-    //reply必须在执行完finished之后才会有返回数据
+    //replyfinishedз
     //If the request has not finished then the returned QModbusResponse instance is invalid.
     if (reply_read) {
 
-        //不在此处频繁切换按钮状态
+        //л
         //        emit execButtonSetSignal(false);
         //        emit readButtonSetSignal(false);
 
         if (!reply_read->isFinished()) {
             //reply->isFinished()
             //Returns true when the reply has finished or was aborted
-            //异步响应
-            //这里会把reply对象给析构掉
+            //
+            //reply
             connect(reply_read, &QModbusReply::finished, [reply_read, this]() {
-                //不在此处频繁切换按钮状态
+                //л
                 //                emit execButtonSetSignal(true);
                 //                emit readButtonSetSignal(true);
 
-                //将数据的处理显示交给一个线程去做
+                //
 //                QByteArray receiveData;
 //                QDataStream receiveStream(&receiveData,QIODevice::WriteOnly);
-                //                receiveStream << reply_read->rawResult(); //写在外部函数中只能用这种形式
+                //                receiveStream << reply_read->rawResult(); //д
                 //                emit sendDataToProcess(receiveData);
                 emit sendDataToProcess(reply_read);
                 qDebug() << "Receive: Asynchronous response PDU: " << reply_read->rawResult();
             });
         }
-        else //同步响应
+        else //
         {
-            //将数据的处理显示交给一个线程去做
+            //
             //            QByteArray receiveData;
             //            QDataStream receiveStream(&receiveData,QIODevice::WriteOnly);
-            //            receiveStream << reply_read->rawResult(); //写在外部函数中只能用这种形式
+            //            receiveStream << reply_read->rawResult(); //д
             emit sendDataToProcess(reply_read);
             qDebug() << "Receive: Synchronous response pdu: " << reply_read->rawResult() << Qt::endl;
         }
     }
 
-    //    计时结束
+    //    
     //    QueryPerformanceCounter(&t2);
     //    dt =(t2.QuadPart -t1.QuadPart)/(double)nFreq.QuadPart;
-    //    qDebug() << QStringLiteral("一次读数据收发时间：") << dt*1000000 << Qt::endl;
+    //    qDebug() << QStringLiteral("ζ") << dt*1000000 << Qt::endl;
 }
 
-//开环模式下的执行函数
+//к
 //void MainWindow::openLoopMode_exec()
 //{
 //    QByteArray pduData;
 //    QDataStream pduDataString(&pduData,QIODevice::WriteOnly);
 
-//    //使用数据流的形式构造写入的pdu
-//    quint16 startAddress = quint16(0);//起始地址
-//    quint16 registerNum = quint16(10);//写入寄存器数量
-//    quint8 byteLength = quint8(20);//写入字节数
+//    //дpdu
+//    quint16 startAddress = quint16(0);//
+//    quint16 registerNum = quint16(10);//д
+//    quint8 byteLength = quint8(20);//д
 //    pduDataString << startAddress << registerNum << byteLength;
-//    //肩关节配置和输入值
+//    //ú
 //    quint16 xset=quint16(checkBox_joint_1_enable->isChecked()? 1:0);
 //    pduDataString << xset;
 //    quint16 eCurrent = quint16(checkBox_joint_1_possitiveCurrent->isChecked()? 0:1 << 15) | quint16(round(doubleSpinBox_joint_1_currentValue->value()*540/692));
 //    pduDataString << eCurrent;
-//    //大臂关节配置和输入值
+//    //ú
 //    xset=quint16(checkBox_joint_2_enable->isChecked()? 1:0);
 //    pduDataString << xset;
 //    eCurrent = quint16(checkBox_joint_2_possitiveCurrent->isChecked()? 0:1 << 15) | quint16(round(doubleSpinBox_joint_2_currentValue->value()*540/692));
 //    pduDataString << eCurrent;
-//    //小臂关节配置和输入值
+//    //Сú
 //    xset=quint16(checkBox_joint_3_enable->isChecked()? 1:0);
 //    pduDataString << xset;
 //    eCurrent = quint16(checkBox_joint_3_possitiveCurrent->isChecked()? 0:1 << 15) | quint16(round(doubleSpinBox_joint_3_currentValue->value()*540/692));
 //    pduDataString << eCurrent;
-//    //肘关节配置和输入值
+//    //ú
 //    xset=quint16(checkBox_joint_4_enable->isChecked()? 1:0);
 //    pduDataString << xset;
 //    eCurrent = quint16(checkBox_joint_4_possitiveCurrent->isChecked()? 0:1 << 15) | quint16(round(doubleSpinBox_Joint_4_currentValue->value()*540/692));
 //    pduDataString << eCurrent;
-//    //手腕摆动关节配置和输入值
+//    //ú
 //    xset=quint16(checkBox_joint_5_enable->isChecked()? 1:0);
 //    pduDataString << xset;
 //    eCurrent = quint16(checkBox_joint_5_possitiveCurrent->isChecked()? 0:1 << 15) | quint16(round(doubleSpinBox_joint_5_currentValue->value()*540/692));
 //    pduDataString << eCurrent;
-//    //手腕旋转关节配置和输入值
+//    //ú
 //    xset=quint16(checkBox_joint_6_enable->isChecked()? 1:0);
 //    pduDataString << xset;
 //    eCurrent = quint16(checkBox_joint_6_possitiveCurrent->isChecked()? 0:1 << 15) | quint16(round(doubleSpinBox_joint_6_currentValue->value()*540/692));
 //    pduDataString << eCurrent;
-//    //手爪关节配置和输入值
+//    //ú
 //    xset=quint16(checkBox_joint_7_enable->isChecked()? 1:0);
 //    pduDataString << xset;
 //    eCurrent = quint16(checkBox_joint_7_possitiveCurrent->isChecked()? 0:1 << 15) | quint16(round(doubleSpinBox_joint_7_currentValue->value()*540/692));
@@ -292,7 +293,7 @@ void MyModbus::readData()
 
 //    qDebug()<<pduData.toHex();
 
-////    l2Spin->setValue(pduData.size()+2);//这里的pduData是不包括功能码的数据部分，所以需要加上功能码长度和单元标识符长度
+////    l2Spin->setValue(pduData.size()+2);//pduData
 
 //    QModbusReply *reply = nullptr;
 
@@ -307,13 +308,13 @@ void MyModbus::readData()
 ////        if (!reply->isFinished()) {
 ////            //reply->isFinished()
 ////            //Returns true when the reply has finished or was aborted
-////            //异步响应
+////            //
 ////            connect(reply, &QModbusReply::finished, [reply, this]() {
 ////                execButton->setEnabled(true);
 ////                qDebug() << "Receive: Asynchronous response PDU: " << reply->rawResult() << Qt::endl;
 ////            });
 ////        }
-////        else //同步响应
+////        else //
 ////        {
 ////            execButton->setEnabled(true);
 ////            qDebug() << "Receive: Synchronous response pdu: " << reply->rawResult() << Qt::endl;
@@ -321,7 +322,7 @@ void MyModbus::readData()
 ////    }
 //}
 
-//闭环模式下生成每一帧数据的PDU部分
+//PDU
 QByteArray MyModbus::generatePdu(QString point, int *gripperList)
 {
     QStringList pointSep = point.split(" ");
@@ -329,46 +330,46 @@ QByteArray MyModbus::generatePdu(QString point, int *gripperList)
     QByteArray pduData;
     QDataStream pduDataString(&pduData,QIODevice::WriteOnly);
 
-    //使用数据流的形式构造写入的pdu
-    quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//起始地址
-    quint16 registerNum = quint16(15);//写入寄存器数量,可以少，不能多
-    quint8 byteLength = quint8(30);//写入字节数
+    //дpdu
+    quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//
+    quint16 registerNum = quint16(15);//д,
+    quint8 byteLength = quint8(30);//д
     quint16 open = 0x0001;
 
     pduDataString  << startAddress << registerNum << byteLength << open;
 
-    /**********************关节1(肩关节)配置和输入值**********************/
+    /**********************1()ú**********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     quint16 joints_value = quint16(round(pointSep.at(0).toFloat()*100));
     pduDataString << joints_value;
 
-    /*********************关节2(大臂关节)配置和输入值**********************/
+    /*********************2()ú**********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(1).toFloat()*100));
     pduDataString << joints_value;
 
-    /*********************关节3(小臂关节)配置和输入值**********************/
+    /*********************3(С)ú**********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(2).toFloat()*100));
     pduDataString << joints_value;
 
-    /**********************关节4(肘关节)配置和输入值***********************/
+    /**********************4()ú***********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(3).toFloat()*100));
     pduDataString << joints_value;
 
-    /********************关节5(手腕摆动关节)配置和输入值*********************/
+    /********************5()ú*********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(4).toFloat()*100));
     pduDataString << joints_value;
 
-    /********************关节6(手腕旋转关节)配置和输入值*********************/
+    /********************6()ú*********************/
     pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
     joints_value = quint16(round(pointSep.at(5).toFloat()*100));
     pduDataString << joints_value;
 
-    /**********************关节7(手爪关节)配置和输入值**********************/
-    quint16 xset = gripperList[0]==0? 0x0000:0x8000;//1为使能，模式只有开环
+    /**********************7()ú**********************/
+    quint16 xset = gripperList[0]==0? 0x0000:0x8000;//1п
     xset = gripperList[1]==0? xset:(xset|0x2000);
     pduDataString << xset;
     joints_value = quint16(gripperList[2]);
@@ -378,13 +379,66 @@ QByteArray MyModbus::generatePdu(QString point, int *gripperList)
 
 }
 
-//闭环模式下移动到指定点
+QByteArray MyModbus::generatePdu(double* commander_pos, int* gripperList)
+{
+    QByteArray pduData;
+    QDataStream pduDataString(&pduData,QIODevice::WriteOnly);
+
+    //дpdu
+    quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//
+    quint16 registerNum = quint16(15);//д,
+    quint8 byteLength = quint8(30);//д
+    quint16 open = 0x0001;
+
+    pduDataString  << startAddress << registerNum << byteLength << open;
+
+    /**********************1()ú**********************/
+    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    quint16 joints_value = quint16(round(commander_pos[0]*100));
+    pduDataString << joints_value;
+
+    /*********************2()ú**********************/
+    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    joints_value = quint16(round(commander_pos[1]*100));
+    pduDataString << joints_value;
+
+    /*********************3(С)ú**********************/
+    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    joints_value = quint16(round(commander_pos[2]*100));
+    pduDataString << joints_value;
+
+    /**********************4()ú***********************/
+    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    joints_value = quint16(round(commander_pos[3]*100));
+    pduDataString << joints_value;
+
+    /********************5()ú*********************/
+    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    joints_value = quint16(round(commander_pos[4]*100));
+    pduDataString << joints_value;
+
+    /********************6()ú*********************/
+    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    joints_value = quint16(round(commander_pos[5]*100));
+    pduDataString << joints_value;
+
+    /**********************7()ú**********************/
+    quint16 xset = gripperList[0]==0? 0x0000:0x8000;//1п
+    xset = gripperList[1]==0? xset:(xset|0x2000);
+    pduDataString << xset;
+    joints_value = quint16(gripperList[2]);
+    pduDataString << joints_value;
+
+    return pduData;
+}
+
+//
 void MyModbus::moveToPoint(QByteArray pduData)
 {
 
     modbusDevice->valueChanged(pduData.size()+2);//33
 
-    QModbusReply *reply_move = nullptr;//写操作的响应
+    QModbusReply *reply_move = nullptr;//д
 
     qDebug() << "Send: Sending custom PDU.";
 
@@ -417,10 +471,10 @@ void MyModbus::moveToPoint(QByteArray pduData)
     }
     //        QueryPerformanceCounter(&t2);
     //        dt =(t2.QuadPart -t1.QuadPart)/(double)nFreq.QuadPart;
-    //        qDebug()<<QStringLiteral("一次数据收发时间：")<<dt*1000000;
+    //        qDebug()<<QStringLiteral("")<<dt*1000000;
 }
 
-//发送P1点的实现
+//P1
 void MyModbus::moveToP1()
 {
     QString point_1 = three_points_string_list.at(0);
@@ -456,7 +510,7 @@ void MyModbus::moveToP1Clicked()
         timer_three_point_3->stop();
 }
 
-//发送P2点的实现
+//P2
 void MyModbus::moveToP2()
 {
     QString point_2 = three_points_string_list.at(1);
@@ -492,7 +546,7 @@ void MyModbus::moveToP2Clicked()
         timer_three_point_3->stop();
 }
 
-//发送P3点的实现
+//P3
 void MyModbus::moveToP3()
 {
     QString point_3 = three_points_string_list.at(2);
@@ -500,7 +554,7 @@ void MyModbus::moveToP3()
         point_3.remove("\r");
 
     static int flag_p3;
-    //越界重置
+    //
     if(flag_p3 > MyModbus::FLAG_UPPER_BOUND_READ_WRITE_POLL)
     {
         flag_p3 = 0;
@@ -552,7 +606,7 @@ void MyModbus::stopSendPoint()
     qDebug()<<"Stop";
 }
 
-//从主线程获取三点连发的QStringList
+//QStringList
 void MyModbus::getThreePointList(QStringList pointList)
 {
     three_points_string_list = pointList;
@@ -700,38 +754,37 @@ void MyModbus::getGripperSpeed(int speedLevel)
 
 void MyModbus::gripperCatchClicked()
 {
-    gripper_set[0] = 1;//使能
-    gripper_set[1] = 0;//闭合
+    gripper_set[0] = 1;//
+    gripper_set[1] = 0;//
 }
 
 void MyModbus::gripperReleaseClicked()
 {
-    gripper_set[0] = 1;//使能
-    gripper_set[1] = 1;//打开
+    gripper_set[0] = 1;//
+    gripper_set[1] = 1;//
 }
 
 void MyModbus::gripperClosePressed()
 {
-    gripper_set[0] = 1;//使能
-    gripper_set[1] = 0;//闭合
+    gripper_set[0] = 1;//
+    gripper_set[1] = 0;//
 }
 
 void MyModbus::gripperCloseReleased()
 {
-    gripper_set[0] = 0;//使能
+    gripper_set[0] = 0;//
 }
 
 void MyModbus::gripperOpenPressed()
 {
-    gripper_set[0] = 1;//使能
-    gripper_set[1] = 1;//打开
+    gripper_set[0] = 1;//
+    gripper_set[1] = 1;//
 }
 
 void MyModbus::gripperOpenReleased()
 {
-    gripper_set[0] = 0;//使能
+    gripper_set[0] = 0;//
 }
-
 
 void MyModbus::getTcpAddress(QString address)
 {
@@ -751,4 +804,37 @@ void MyModbus::getNumberOfRetries(int retries)
 void MyModbus::getTimeOut(int out)
 {
     time_out = out;
+}
+
+void MyModbus::trajectoryPlanStart()
+{
+    stopAllTimers();
+    if(!timer_trajectory_plan->isActive())
+        timer_trajectory_plan->start(MyModbus::TIMER_TRAJECTORY_PLAN);
+}
+
+void MyModbus::trajectoryPlan()
+{
+    QString point_3 = three_points_string_list.at(2);
+    if(point_3.contains("\r"))
+        point_3.remove("\r");
+
+    static int flag_trajectory_paln = 0;
+    if(flag_trajectory_paln > MyModbus::FLAG_UPPER_BOUND_READ_WRITE_POLL)
+    {
+        flag_trajectory_paln = 0;
+    }
+
+    if( flag_trajectory_paln % 2 == 0)
+    {
+        readData();
+//        qDebug() << flag_trajectory_paln;
+    }
+    else
+    {
+        QByteArray trajectory_planed_pdu = generatePdu(trajectory_planed,gripper_set);
+        moveToPoint(trajectory_planed_pdu);
+//        qDebug() << flag_trajectory_paln;
+    }
+    flag_trajectory_paln++;
 }

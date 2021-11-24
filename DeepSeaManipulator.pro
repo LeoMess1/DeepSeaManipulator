@@ -2,23 +2,22 @@ TEMPLATE = app
 CONFIG += c++11
 
 INCLUDEPATH += \
-    D:\MVS\Development\Includes
-INCLUDEPATH += \
-    $$quote(E:\Qt Workspace\Work\DeepSeaManipulator\includes)
+    D:\MVS\Development\Includes \
+    E:\QtWorkSpace\Work\DeepSeaManipulator\includes
 
 #TARGET = adueditor
 QT += serialbus widgets
-#QT += serialbus-private core-private
+QT += serialbus-private core-private
 requires(qtConfig(combobox))
-#requires(qtConfig(modbus-serialport))
+requires(qtConfig(modbus-serialport))
 
 LIBS += \
-    -LD:\MVS\Development\Libraries\win64 -lMvCameraControl
-LIBS += \
-    -L$$quote(E:\Qt Workspace\Work\DeepSeaManipulator\lib) -lDeepSeaController
+    -LD:\MVS\Development\Libraries\win64 -lMvCameraControl \
+    -LE:\QtWorkSpace\Work\DeepSeaManipulator\lib -lDeepSeaController
 
 SOURCES += \
     MvCamera.cpp \
+    commanderInterface.cpp \
     main.cpp \
     mainwindow.cpp \
     modbustcpclient.cpp \
@@ -28,6 +27,7 @@ SOURCES += \
 
 HEADERS += \
     MvCamera.h \
+    commanderInterface.h \
     mainwindow.h  \
     modbustcpclient.h \
     modbustcpclient_p.h \

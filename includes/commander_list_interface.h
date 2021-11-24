@@ -7,6 +7,7 @@
 class Icommander_list
 {
 
+   // virtual void init(MyModbus * myModbus) = 0;
 	//显示消息接口
 public:
 	virtual int displayForceSensorResult(int state) = 0; //控制器向界面发送六维力负载大小，以及碰撞检测结果

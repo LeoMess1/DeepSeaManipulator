@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     MainWindow w;
-//    w.setGeometry(300,100,962,754);
+    w.setGeometry(350,100,850,750);
     w.show();
 
     return a.exec();

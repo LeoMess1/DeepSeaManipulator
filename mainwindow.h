@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+ #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
@@ -14,6 +14,7 @@
 #include "mycontroller.h"
 #include "CameraParams.h"
 #include "MvCamera.h"
+#include"commanderInterface.h"
 
 QT_BEGIN_NAMESPACE
 class QModbusClient;
@@ -61,6 +62,7 @@ signals:
     void masterValveEnableSignal();
     void masterValveUnableSignal();
     void sendCurrentDeviceIndex(int);//获取设备下拉列表的index
+    void sendDataToController(bool systemStatus,JointTheta jointTheta);
 
 public slots:
 
@@ -95,7 +97,9 @@ public slots:
     void on_pushButton_getPointsSequence_clicked();
 
     /***************************功能函数*******************************/
-    void data_show(QModbusReply *reply);
+    void readDataProcess(QModbusReply *reply);
+    void saveReadData();
+    void saveWriteData(double*);
 
 
     /***************************************************************
@@ -111,14 +115,17 @@ public slots:
 
 private slots:
 
+    void on_pushButton_getTrajectorySaveDirectory_clicked();
+
 private:
     //    DebugHandler m_debugHandler;
     QModbusClient *m_device = nullptr;
 
     //文件目录获取函数
-    QString directory_save               = QStringLiteral("C:/Users/Loki_/Desktop/zhuqu.txt");
-    QString directory_get_three_points   = QStringLiteral("C:/Users/Loki_/Desktop/joints.txt");
-    QString directory_get_line_points    = QStringLiteral("C:/Users/Loki_/Desktop/joints_theta_all.txt");
+    QString directory_save               = QStringLiteral("C:/Users/Administrator/Desktop/record.txt");
+    QString directory_get_three_points   = QStringLiteral("C:/Users/Administrator/Desktop/joints.txt");
+    QString directory_get_line_points    = QStringLiteral("C:/Users/Administrator/Desktop/joints_theta_all.txt");
+    QString directory_save_trajectory    = QStringLiteral("C:/Users/Administrator/Desktop/trajectoryPlan.txt");
 
     //连续存储定时器
     QTimer *timer_save                   = new QTimer(this);
@@ -130,6 +137,8 @@ private:
     int line_points_index                = 0;
 
     CMvCamera *myMvCamera = new CMvCamera;
+
+//  JointTheta theta;
 
 };
 
