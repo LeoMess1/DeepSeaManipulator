@@ -1,4 +1,4 @@
- #ifndef MAINWINDOW_H
+#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
@@ -14,7 +14,7 @@
 #include "mycontroller.h"
 #include "CameraParams.h"
 #include "MvCamera.h"
-#include"commanderInterface.h"
+#include "commanderInterface.h"
 
 QT_BEGIN_NAMESPACE
 class QModbusClient;
@@ -63,6 +63,7 @@ signals:
     void masterValveUnableSignal();
     void sendCurrentDeviceIndex(int);//获取设备下拉列表的index
     void sendDataToController(bool systemStatus,JointTheta jointTheta);
+    void sendCurrentJointsAngles(double*);
 
 public slots:
 
@@ -97,9 +98,11 @@ public slots:
     void on_pushButton_getPointsSequence_clicked();
 
     /***************************功能函数*******************************/
-    void readDataProcess(QModbusReply *reply);
-    void saveReadData();
-    void saveWriteData(double*);
+    void readDataProcess(bool,quint16,QModbusReply *reply);
+    void readRegesiterProcess(QModbusReply *replyRegister);
+    void saveDataRead();
+    void saveDataToWrite(double[]);
+    void saveDataWritten(double[]);
 
 
     /***************************************************************
@@ -109,7 +112,6 @@ public slots:
     /****************************提示窗口*****************************/
     void showErrorMessage(QString error_massage);
     void addComboBoxCameraDeviceItems(QString itemString);
-
     void displayOneFrame(MV_FRAME_OUT stImageInfo,MV_DISPLAY_FRAME_INFO stDisplayInfo);
 
 
@@ -122,23 +124,24 @@ private:
     QModbusClient *m_device = nullptr;
 
     //文件目录获取函数
-    QString directory_save               = QStringLiteral("C:/Users/Administrator/Desktop/record.txt");
-    QString directory_get_three_points   = QStringLiteral("C:/Users/Administrator/Desktop/joints.txt");
-    QString directory_get_line_points    = QStringLiteral("C:/Users/Administrator/Desktop/joints_theta_all.txt");
-    QString directory_save_trajectory    = QStringLiteral("C:/Users/Administrator/Desktop/trajectoryPlan.txt");
+    QString directory_save               =      QStringLiteral("E:/QtWorkSpace/Work/DeepSeaManipulator/files/record.txt");
+    QString directory_get_three_points   =      QStringLiteral("E:/QtWorkSpace/Work/DeepSeaManipulator/files/joints.txt");
+    QString directory_get_line_points    =      QStringLiteral("E:/QtWorkSpace/Work/DeepSeaManipulator/files/joints_theta_all.txt");
+    QString directory_save_trajectory    =      QStringLiteral("E:/QtWorkSpace/Work/DeepSeaManipulator/files/trajectoryPlan.txt");
+    QString directory_data_read          =      QStringLiteral("E:/QtWorkSpace/Work/DeepSeaManipulator/files/data_read.txt");
+
 
     //连续存储定时器
-    QTimer *timer_save                   = new QTimer(this);
+    QTimer *timer_save                   =      new QTimer(this);
 
     //多点连发
     QStringList three_points_list;
 
     //连续发送一条直线上的点
-    int line_points_index                = 0;
+    int line_points_index                =      0;
 
     CMvCamera *myMvCamera = new CMvCamera;
-
-//  JointTheta theta;
+    double current_joints_angles[6];
 
 };
 

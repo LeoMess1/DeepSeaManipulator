@@ -1,5 +1,7 @@
 #include "commanderInterface.h"
 #include <stdio.h>
+#include"controllerInterface.h"
+
 Icommander_list* commanderInterface::instance_ = NULL;
 commanderInterface* commanderInterface::commandInstance_= NULL;
 
@@ -43,17 +45,27 @@ int commanderInterface::displayCalibrationPosIndex(int num_Index)
 
 int commanderInterface::reportError(int error, std::string error_log)
 {
+    CONTROLLER_INTERFACE->resetAlgrithm();
     return 0;
 }
 
 FILE *fp = fopen("E://points.txt","a+");
-int commanderInterface::sendPosCommander(double* pos_commander)
+int commanderInterface::sendPosCommander(bool servo,JointTheta pos_commander)
 {
 //    QByteArray pos_commander_pdu =  myModbus_->generatePdu(pos_commander,myModbus_->gripper_set);
 //    myModbus_->moveToPoint(pos_commander_pdu);
-    memcpy(myModbus_->trajectory_planed,pos_commander,sizeof(double)*6);
-    emit myModbus_->saveWriteDataSignal(pos_commander);
-    fprintf(fp,"%f,%f,%f,%f,%f,%f\n",pos_commander[0],pos_commander[1],pos_commander[2],pos_commander[3],pos_commander[4],pos_commander[5]);
+//    myModbus_->joints_set = myModbus_->JOINTS_SET_ENABLE_CLOSED_LOOP;
+    myModbus_->system_server = servo;
+    double pos[6]={0};
+    pos[0] =  pos_commander.theta1_;
+    pos[1] =  pos_commander.theta2_;
+    pos[2] =  pos_commander.theta3_;
+    pos[3] =  pos_commander.theta4_;
+    pos[4] =  pos_commander.theta5_;
+    pos[5] =  pos_commander.theta6_;
+    memcpy(myModbus_->trajectory_planed,pos,sizeof(double)*6);
+    myModbus_->saveDataToWrite(pos);//存储将要发送的点
+    fprintf(fp,"%f,%f,%f,%f,%f,%f\n",pos[0],pos[1],pos[2],pos[3],pos[4],pos[5]);
     return 0;
 }
 
@@ -74,6 +86,8 @@ int commanderInterface::sendPosOffset_error(int Joint_Index)//发送位置控制误差过
 
 int commanderInterface::isAnyErrorExist()//控制器向界面询问系统是否存在致命错误，返回为0，表示无误
 {
+    //查询总闸状态和系统状态
+
     return 0;
 }
 

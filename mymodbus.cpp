@@ -1,9 +1,13 @@
+#include <QTime>
+#include <QFile>
+#include <QMessageBox>
+
 #include "mymodbus.h"
 
 MyModbus::MyModbus(QObject *parent) : QObject(parent)
 {
-    connect(timer_master_valve,&QTimer::timeout,this,&MyModbus::MasterValve);
-    connect(timer_read,&QTimer::timeout,this,&MyModbus::readData);
+    connect(timer_read_write_pool,&QTimer::timeout,this,&MyModbus::readAndWritePool);
+    connect(timer_read_write_register_test,&QTimer::timeout,this,&MyModbus::readWriteRegisterTest);
     connect(timer_three_point_1,&QTimer::timeout,this,&MyModbus::moveToP1);
     connect(timer_three_point_2,&QTimer::timeout,this,&MyModbus::moveToP2);
     connect(timer_three_point_3,&QTimer::timeout,this,&MyModbus::moveToP3);
@@ -35,7 +39,6 @@ MyModbus::MyModbus(QObject *parent) : QObject(parent)
         }
         i++;
     });
-    connect(timer_trajectory_plan,&QTimer::timeout,this,&MyModbus::trajectoryPlan);
 }
 
 void MyModbus::startWork()
@@ -64,18 +67,22 @@ void MyModbus::connectModbus()
         }, Qt::QueuedConnection);
 
         //modbus
-        connect(modbusDevice, &QModbusDevice::stateChanged, [](QModbusDevice::State state) {
+        connect(modbusDevice, &QModbusDevice::stateChanged, [=](QModbusDevice::State state) {
             switch (state) {
             case QModbusDevice::UnconnectedState://δ
+                modbusStatus = FALSE;
                 qDebug().noquote() << QStringLiteral("State: Entered unconnected state.");
                 break;
             case QModbusDevice::ConnectingState://
+                modbusStatus = FALSE;
                 qDebug().noquote() << QStringLiteral("State: Entered connecting state.");
                 break;
             case QModbusDevice::ConnectedState://
+                modbusStatus = TRUE;
                 qDebug().noquote() << QStringLiteral("State: Entered connected state.");
                 break;
             case QModbusDevice::ClosingState://
+                modbusStatus = FALSE;
                 qDebug().noquote() << QStringLiteral("State: Entered closing state.");
                 break;
             }
@@ -83,14 +90,13 @@ void MyModbus::connectModbus()
         //豸
         modbusDevice->connectDevice();
     }
-    timer_read->start(MyModbus::TIMER_READ);//
+    timer_read_write_pool->start(MyModbus::TIMER_READ_WRITE_POOL);
+    //timer_read_write_register_test->start(MyModbus::TIMER_READ_WRITE_POOL);
 }
 
 void MyModbus::disconnectModbus()
 {
-    //
-    if(timer_read->isActive())
-        timer_read->stop();
+    stopAllTimers();
 
     modbusDevice->disconnect();//modbus
     modbusDevice->disconnectDevice();//modbus豸
@@ -101,12 +107,14 @@ void MyModbus::disconnectModbus()
 //ж
 void MyModbus::stopAllTimers()
 {
-    if(timer_master_valve->isActive())
-        timer_master_valve->stop();
-    if(timer_read->isActive())
-        timer_read->stop();
+
+    //读写轮询定时器
+    if(timer_read_write_pool->isActive())
+        timer_read_write_pool->stop();
+    //发送到点1定时器
     if(timer_three_point_1->isActive())
         timer_three_point_1->stop();
+    //发送到点2
     if(timer_three_point_2->isActive())
         timer_three_point_2->stop();
     if(timer_three_point_3->isActive())
@@ -120,57 +128,45 @@ void MyModbus::stopAllTimers()
 }
 
 //
-void MyModbus::MasterValve()
-{
-    QByteArray pduData;
-    QDataStream pduDataString(&pduData,QIODevice::WriteOnly);
-
-    //дpdu
-    quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//
-    quint16 registerNum = quint16(13);//д,
-    quint8 byteLength = quint8(26);//д
-    quint16 open = 0x0001;//
-
-    pduDataString  << startAddress << registerNum << byteLength << open;
-
-    quint32 jointSet = 0x80000000;//
-
-    pduDataString << jointSet<< jointSet<< jointSet<< jointSet<< jointSet<< jointSet;
-
-    modbusDevice->valueChanged(pduData.size()+2);//33
-
-    QModbusReply *reply_move = nullptr;//д
-
-    qDebug() << "Send: Sending custom PDU.";
-
-    reply_move = modbusDevice->sendRawRequest(QModbusRequest(QModbusRequest::FunctionCode(16), pduData), quint8(1));
-    if (reply_move) {
-        //        emit execButtonSetSignal(false);
-        if (!reply_move->isFinished()) {
-            connect(reply_move, &QModbusReply::finished, [reply_move]() {
-                qDebug() << "Receive: Asynchronous response PDU: " << reply_move->rawResult() << Qt::endl;
-            });
-        }
-        else
-        {
-            qDebug() << "Receive: Synchronous response pdu: " << reply_move->rawResult() << Qt::endl;
-        }
-    }
-}
-
-//
+int jishu = 0;
 void MyModbus::masterValveEnable()
 {
-    //    MasterValve();
-    if(!timer_master_valve->isActive())
-        timer_master_valve->start(MyModbus::TIMER_MASTER_VALVE);
+    master_valve_flag = 0x0001;
+    //    if(timer_read_write_register_test->isActive())
+    //        timer_read_write_register_test->stop();
+
+    //    if(!timer_read_write_pool->isActive())
+    //        timer_read_write_pool->start(TIMER_READ_WRITE_POOL);
 }
 
 //
 void MyModbus::masterValveUnable()
 {
-    if(timer_master_valve->isActive())
-        timer_master_valve->stop();
+    master_valve_flag = 0x0000;
+    //    static int i = 0;
+    //    if(jishu>0)
+    //   {
+    //    if(timer_read_write_pool->isActive())
+    //        timer_read_write_pool->stop();
+
+    //    if(!timer_read_write_register_test->isActive())
+    //        timer_read_write_register_test->start(TIMER_READ_WRITE_POOL);
+    //    }
+    //    else
+    //    {
+    //        if(timer_read_write_register_test->isActive())
+    //            timer_read_write_register_test->stop();
+
+    //        if(!timer_read_write_pool->isActive())
+    //            timer_read_write_pool->start(TIMER_READ_WRITE_POOL);
+
+    //    }
+
+    //    jishu++;
+
+
+
+    //        joints_set = MyModbus::JOINTS_SET_UNABLE;
 }
 
 //
@@ -187,61 +183,25 @@ void MyModbus::readData()
 
     modbusDevice->valueChanged(pduData_read.size()+2);//0x06
 
-    //
-    //    LARGE_INTEGER nFreq;
-    //    LARGE_INTEGER t1;
-    //    LARGE_INTEGER t2;
-    //    double dt;
-    //    QueryPerformanceFrequency(&nFreq);
-    //    QueryPerformanceCounter(&t1);
-
-    //
     QModbusReply *reply_read = nullptr;
-    reply_read = modbusDevice->sendRawRequest(QModbusRequest(
-             QModbusRequest::FunctionCode(QModbusPdu::ReadInputRegisters), pduData_read),quint8(1));
+    reply_read = modbusDevice->sendRawRequest(QModbusRequest(QModbusRequest::FunctionCode(
+                                                                 QModbusPdu::ReadInputRegisters),pduData_read),quint8(1));
 
-    //replyfinishedз
+    //replyfinished
     //If the request has not finished then the returned QModbusResponse instance is invalid.
     if (reply_read) {
-
-        //л
-        //        emit execButtonSetSignal(false);
-        //        emit readButtonSetSignal(false);
-
         if (!reply_read->isFinished()) {
-            //reply->isFinished()
-            //Returns true when the reply has finished or was aborted
-            //
-            //reply
             connect(reply_read, &QModbusReply::finished, [reply_read, this]() {
-                //л
-                //                emit execButtonSetSignal(true);
-                //                emit readButtonSetSignal(true);
-
-                //
-//                QByteArray receiveData;
-//                QDataStream receiveStream(&receiveData,QIODevice::WriteOnly);
-                //                receiveStream << reply_read->rawResult(); //д
-                //                emit sendDataToProcess(receiveData);
-                emit sendDataToProcess(reply_read);
+                emit sendDataToProcess(modbusStatus,master_valve_flag,reply_read);
                 qDebug() << "Receive: Asynchronous response PDU: " << reply_read->rawResult();
             });
         }
         else //
         {
-            //
-            //            QByteArray receiveData;
-            //            QDataStream receiveStream(&receiveData,QIODevice::WriteOnly);
-            //            receiveStream << reply_read->rawResult(); //д
-            emit sendDataToProcess(reply_read);
+            emit sendDataToProcess(modbusStatus,master_valve_flag,reply_read);
             qDebug() << "Receive: Synchronous response pdu: " << reply_read->rawResult() << Qt::endl;
         }
     }
-
-    //    
-    //    QueryPerformanceCounter(&t2);
-    //    dt =(t2.QuadPart -t1.QuadPart)/(double)nFreq.QuadPart;
-    //    qDebug() << QStringLiteral("ζ") << dt*1000000 << Qt::endl;
 }
 
 //к
@@ -322,7 +282,7 @@ void MyModbus::readData()
 ////    }
 //}
 
-//PDU
+//生成发送点的报文PDU
 QByteArray MyModbus::generatePdu(QString point, int *gripperList)
 {
     QStringList pointSep = point.split(" ");
@@ -334,37 +294,36 @@ QByteArray MyModbus::generatePdu(QString point, int *gripperList)
     quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//
     quint16 registerNum = quint16(15);//д,
     quint8 byteLength = quint8(30);//д
-    quint16 open = 0x0001;
 
-    pduDataString  << startAddress << registerNum << byteLength << open;
+    pduDataString  << startAddress << registerNum << byteLength << master_valve_flag;
 
     /**********************1()ú**********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    pduDataString << joints_set;
     quint16 joints_value = quint16(round(pointSep.at(0).toFloat()*100));
     pduDataString << joints_value;
 
     /*********************2()ú**********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    pduDataString << joints_set;
     joints_value = quint16(round(pointSep.at(1).toFloat()*100));
     pduDataString << joints_value;
 
     /*********************3(С)ú**********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    pduDataString << joints_set;
     joints_value = quint16(round(pointSep.at(2).toFloat()*100));
     pduDataString << joints_value;
 
     /**********************4()ú***********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    pduDataString << joints_set;
     joints_value = quint16(round(pointSep.at(3).toFloat()*100));
     pduDataString << joints_value;
 
     /********************5()ú*********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    pduDataString << joints_set;
     joints_value = quint16(round(pointSep.at(4).toFloat()*100));
     pduDataString << joints_value;
 
     /********************6()ú*********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
+    pduDataString << joints_set;
     joints_value = quint16(round(pointSep.at(5).toFloat()*100));
     pduDataString << joints_value;
 
@@ -379,7 +338,8 @@ QByteArray MyModbus::generatePdu(QString point, int *gripperList)
 
 }
 
-QByteArray MyModbus::generatePdu(double* commander_pos, int* gripperList)
+QByteArray MyModbus::generatePdu(quint16 master_flag,quint16 joint_set,
+                                 double* position_point, int* gripperList)
 {
     QByteArray pduData;
     QDataStream pduDataString(&pduData,QIODevice::WriteOnly);
@@ -388,38 +348,38 @@ QByteArray MyModbus::generatePdu(double* commander_pos, int* gripperList)
     quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//
     quint16 registerNum = quint16(15);//д,
     quint8 byteLength = quint8(30);//д
-    quint16 open = 0x0001;
+    //    quint16 open = 0x0001;
 
-    pduDataString  << startAddress << registerNum << byteLength << open;
+    pduDataString  << startAddress << registerNum << byteLength << master_flag;
 
     /**********************1()ú**********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
-    quint16 joints_value = quint16(round(commander_pos[0]*100));
+    pduDataString << joint_set;
+    quint16 joints_value = quint16(round(position_point[0]*100));
     pduDataString << joints_value;
 
     /*********************2()ú**********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
-    joints_value = quint16(round(commander_pos[1]*100));
+    pduDataString << joint_set;
+    joints_value = quint16(round(position_point[1]*100));
     pduDataString << joints_value;
 
     /*********************3(С)ú**********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
-    joints_value = quint16(round(commander_pos[2]*100));
+    pduDataString << joint_set;
+    joints_value = quint16(round(position_point[2]*100));
     pduDataString << joints_value;
 
     /**********************4()ú***********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
-    joints_value = quint16(round(commander_pos[3]*100));
+    pduDataString << joint_set;
+    joints_value = quint16(round(position_point[3]*100));
     pduDataString << joints_value;
 
     /********************5()ú*********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
-    joints_value = quint16(round(commander_pos[4]*100));
+    pduDataString << joint_set;
+    joints_value = quint16(round(position_point[4]*100));
     pduDataString << joints_value;
 
     /********************6()ú*********************/
-    pduDataString << JOINTS_SET_ENABLE_CLOSED_LOOP;
-    joints_value = quint16(round(commander_pos[5]*100));
+    pduDataString << joint_set;
+    joints_value = quint16(round(position_point[5]*100));
     pduDataString << joints_value;
 
     /**********************7()ú**********************/
@@ -435,10 +395,9 @@ QByteArray MyModbus::generatePdu(double* commander_pos, int* gripperList)
 //
 void MyModbus::moveToPoint(QByteArray pduData)
 {
+    modbusDevice->valueChanged(pduData.size()+2);//0x4000~0x400E共14个寄存器28个字节加上
 
-    modbusDevice->valueChanged(pduData.size()+2);//33
-
-    QModbusReply *reply_move = nullptr;//д
+    QModbusReply *reply_move = nullptr;
 
     qDebug() << "Send: Sending custom PDU.";
 
@@ -450,9 +409,8 @@ void MyModbus::moveToPoint(QByteArray pduData)
     //        QueryPerformanceCounter(&t1);
 
     reply_move = modbusDevice->sendRawRequest(QModbusRequest(
-           QModbusRequest::FunctionCode(QModbusPdu::WriteMultipleRegisters),pduData),quint8(1));
+                                                  QModbusRequest::FunctionCode(QModbusPdu::WriteMultipleRegisters),pduData),quint8(1));
     if (reply_move) {
-        //        emit execButtonSetSignal(false);
         if (!reply_move->isFinished()) {
             //reply->isFinished()
             //Returns true when the reply has finished or was aborted
@@ -464,7 +422,6 @@ void MyModbus::moveToPoint(QByteArray pduData)
         }
         else
         {
-            //            emit execButtonSetSignal(true);
             qDebug() << "Receive: Synchronous response pdu: "
                      << reply_move->rawResult() << Qt::endl;
         }
@@ -472,6 +429,19 @@ void MyModbus::moveToPoint(QByteArray pduData)
     //        QueryPerformanceCounter(&t2);
     //        dt =(t2.QuadPart -t1.QuadPart)/(double)nFreq.QuadPart;
     //        qDebug()<<QStringLiteral("")<<dt*1000000;
+
+    bool ok;
+    double dataWritten[6]={
+        QString::number(pduData.mid(9,2).toHex().toInt(&ok,16)*0.01).toDouble(),
+        QString::number(pduData.mid(13,2).toHex().toInt(&ok,16)*0.01).toDouble(),
+        QString::number(pduData.mid(17,2).toHex().toInt(&ok,16)*0.01).toDouble(),
+        QString::number(pduData.mid(21,2).toHex().toInt(&ok,16)*0.01).toDouble(),
+        QString::number(pduData.mid(25,2).toHex().toInt(&ok,16)*0.01).toDouble(),
+        QString::number(pduData.mid(29,2).toHex().toInt(&ok,16)*0.01).toDouble()
+    };
+
+//    emit saveWriteDataSignal(" data written : ",&dataWritten[0]);
+    saveDataWritten(dataWritten);
 }
 
 //P1
@@ -590,20 +560,7 @@ void MyModbus::autoMoveClicked()
 
 void MyModbus::stopSendPoint()
 {
-    if(timer_read->isActive())
-        timer_read->stop();
-    if(timer_three_point_1->isActive())
-        timer_three_point_1->stop();
-    if(timer_three_point_2->isActive())
-        timer_three_point_2->stop();
-    if(timer_three_point_3->isActive())
-        timer_three_point_3->stop();
-    if(timer_read->isActive())
-        timer_read->stop();
-    if(timer_three_points->isActive())
-        timer_three_points->stop();
-    masterValveEnable();
-    qDebug()<<"Stop";
+    stopAllTimers();
 }
 
 //QStringList
@@ -619,9 +576,6 @@ void MyModbus::getLinePointsList(QStringList list)
 
 void MyModbus::moveToPointsSequence()
 {
-    if(timer_master_valve->isActive())
-        timer_master_valve->stop();
-
     //    static int lineFlag = 0;
     if(line_points_index >= 2*(line_points.size()))
         line_points_index = 0;
@@ -645,22 +599,6 @@ void MyModbus::moveToPointsSequence()
         line_flag++;
         line_points_index++;
     }
-    //    else
-    //    {
-    //        if(lineFlag%2 == 0)
-    //        {
-    //            QString linePoint = linePoints.at(floor(linePointsIndex/2)-1);
-    //            if(linePoint.contains("\r"))
-    //                linePoint.remove("\r");
-    //            QByteArray linePointPdu = generate_pointPdu(linePoint,gripperSet);
-    //            move_to_point(linePointPdu);
-    //        }
-    //        else
-    //        {
-    //            readData();
-    //        }
-    //        lineFlag++;
-    //    }
 }
 
 void MyModbus::moveToPointsSequenceClicked()
@@ -676,8 +614,6 @@ void MyModbus::moveToPointsSequenceClicked()
 
 void MyModbus::moveToPointsSequenceDiverse()
 {
-    if(timer_master_valve->isActive())
-        timer_master_valve->stop();
 
     if(line_points_index > 0)
     {
@@ -786,6 +722,11 @@ void MyModbus::gripperOpenReleased()
     gripper_set[0] = 0;//
 }
 
+void MyModbus::setCurrentJointsAngles(double *angles)
+{
+    memcpy(current_joints_angles,angles,sizeof(double)*6);
+}
+
 void MyModbus::getTcpAddress(QString address)
 {
     tcp_address = address;
@@ -806,35 +747,187 @@ void MyModbus::getTimeOut(int out)
     time_out = out;
 }
 
-void MyModbus::trajectoryPlanStart()
+void MyModbus::readAndWritePool()
 {
-    stopAllTimers();
-    if(!timer_trajectory_plan->isActive())
-        timer_trajectory_plan->start(MyModbus::TIMER_TRAJECTORY_PLAN);
-}
+    static int flag_read_write_pool = 0;
 
-void MyModbus::trajectoryPlan()
-{
-    QString point_3 = three_points_string_list.at(2);
-    if(point_3.contains("\r"))
-        point_3.remove("\r");
-
-    static int flag_trajectory_paln = 0;
-    if(flag_trajectory_paln > MyModbus::FLAG_UPPER_BOUND_READ_WRITE_POLL)
+    if(flag_read_write_pool > MyModbus::FLAG_UPPER_BOUND_READ_WRITE_POLL)
     {
-        flag_trajectory_paln = 0;
+        flag_read_write_pool = 0;
     }
 
-    if( flag_trajectory_paln % 2 == 0)
+    if( flag_read_write_pool % 2 == 0)
     {
         readData();
-//        qDebug() << flag_trajectory_paln;
     }
     else
     {
-        QByteArray trajectory_planed_pdu = generatePdu(trajectory_planed,gripper_set);
+        //if((master_valve_flag==MASTER_VALVE_OPEN) == system_server)
+        //{
+        if(master_valve_flag)
+        {
+
+            master_valve_flag = MyModbus::MASTER_VALVE_OPEN;
+            joints_set = MyModbus::JOINTS_SET_ENABLE_CLOSED_LOOP;
+        }
+        else
+        {
+            master_valve_flag = MyModbus::MASTER_VALVE_CLOSE;
+            joints_set = MyModbus::JOINTS_SET_UNABLE;
+        }
+        // }
+
+        QByteArray trajectory_planed_pdu = generatePdu(MyModbus::master_valve_flag,MyModbus::joints_set,
+                                                       MyModbus::trajectory_planed,MyModbus::gripper_set);
         moveToPoint(trajectory_planed_pdu);
-//        qDebug() << flag_trajectory_paln;
     }
-    flag_trajectory_paln++;
+
+    flag_read_write_pool++;
+}
+
+void MyModbus::readWriteRegisterTest()
+{
+    static int flag_read_write_pool = 0;
+
+    if(flag_read_write_pool > MyModbus::FLAG_UPPER_BOUND_READ_WRITE_POLL)
+    {
+        flag_read_write_pool = 0;
+    }
+
+    if( flag_read_write_pool % 2 == 0)
+    {
+        readRegister();
+    }
+    else
+    {
+        // if((master_valve_flag) /*== system_server*/)
+        // {
+        if(master_valve_flag/*system_server*/)
+        {
+
+            master_valve_flag = MyModbus::MASTER_VALVE_OPEN;
+            joints_set = MyModbus::JOINTS_SET_ENABLE_CLOSED_LOOP;
+        }
+        else
+        {
+            master_valve_flag = MyModbus::MASTER_VALVE_CLOSE;
+            joints_set = MyModbus::JOINTS_SET_UNABLE;
+        }
+        // }
+        QByteArray trajectory_planed_pdu = generatePdu(MyModbus::master_valve_flag,MyModbus::joints_set,
+                                                       MyModbus::trajectory_planed,MyModbus::gripper_set);
+        moveToPoint(trajectory_planed_pdu);
+    }
+
+    flag_read_write_pool++;
+}
+
+void MyModbus::readRegister()
+{
+    QByteArray pduData_read;
+    QDataStream pduDataString(&pduData_read,QIODevice::WriteOnly);
+
+    //pdu
+    quint16 startAddress = WRITE_INSTRUCTIONS_START_ADDRESS;//***************
+    //
+    quint16 registerNum = 0x0D;//***************
+    pduDataString << startAddress << registerNum;
+
+    modbusDevice->valueChanged(pduData_read.size()+2);//0x06
+
+    QModbusReply *reply_read = nullptr;
+    reply_read = modbusDevice->sendRawRequest(QModbusRequest(QModbusRequest::FunctionCode(
+                                                                 QModbusPdu::ReadHoldingRegisters),pduData_read),quint8(1));
+
+    //replyfinished
+    //If the request has not finished then the returned QModbusResponse instance is invalid.
+    if (reply_read) {
+        if (!reply_read->isFinished()) {
+            connect(reply_read, &QModbusReply::finished, [reply_read, this]() {
+                emit sendRegisterData(reply_read);
+                qDebug() << "Receive: Asynchronous response PDU: " << reply_read->rawResult();
+            });
+        }
+        else //
+        {
+            emit sendRegisterData(reply_read);
+            qDebug() << "Receive: Synchronous response pdu: " << reply_read->rawResult() << Qt::endl;
+        }
+    }
+}
+
+void MyModbus::saveDataToWrite(double *data_to_write)
+{
+    double a[6];
+    memcpy(a,data_to_write,sizeof(double)*6);
+
+    QTime current_time =QTime::currentTime();
+    QString hourString = QString::number(current_time.hour());
+    QString minuteString = QString::number(current_time.minute());
+    QString secondString = QString::number(current_time.second());
+    QString msecString = QString::number(current_time.msec());
+
+    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data to write : ";
+
+    if(!directpry_data_to_write.isEmpty())
+    {
+        //存储传感器数据到文本中
+        QFile file(directpry_data_to_write);
+        if(file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text))
+        {
+            QTextStream out(&file);
+            if(data_to_write!=NULL)
+            {
+                QString txtSaveString;
+                txtSaveString = time + "\t" + QString::number(data_to_write[0]) + "\t" + QString::number(data_to_write[1],10,2) + "\t"
+                        + QString::number(data_to_write[2],10,2) + "\t" + QString::number(data_to_write[3],10,2)+ "\t"
+                        + QString::number(data_to_write[4],10,2) + "\t" + QString::number(data_to_write[5],10,2);
+                out << txtSaveString << Qt::endl;
+            }
+        }
+        file.close();
+    }
+    else
+    {
+//        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
+        return;
+    }
+}
+
+void MyModbus::saveDataWritten(double *data_written)
+{
+    double a[6];
+    memcpy(a,data_written,sizeof(double)*6);
+
+    QTime current_time =QTime::currentTime();
+    QString hourString = QString::number(current_time.hour());
+    QString minuteString = QString::number(current_time.minute());
+    QString secondString = QString::number(current_time.second());
+    QString msecString = QString::number(current_time.msec());
+
+    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data written : ";
+
+    if(!directory_data_written.isEmpty())
+    {
+        //存储传感器数据到文本中
+        QFile file(directory_data_written);
+        if(file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text))
+        {
+            QTextStream out(&file);
+            if(data_written!=NULL)
+            {
+                QString txtSaveString;
+                txtSaveString = time + "\t" + QString::number(data_written[0]) + "\t" + QString::number(data_written[1],10,2) + "\t"
+                        + QString::number(data_written[2],10,2) + "\t" + QString::number(data_written[3],10,2)+ "\t"
+                        + QString::number(data_written[4],10,2) + "\t" + QString::number(data_written[5],10,2);
+                out << txtSaveString << Qt::endl;
+            }
+        }
+        file.close();
+    }
+    else
+    {
+//        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
+        return;
+    }
 }

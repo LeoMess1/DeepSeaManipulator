@@ -33,6 +33,7 @@ public:
 
 	//界面参数设置接口
 public:
+	virtual void resetAlgrithm();
 	virtual void OnClickedMoveRobotJoints(JointTheta jointTheta, double speed);
 
 	virtual void OnBnClickedVisualAproachPosButton(Frame pos, double speed);

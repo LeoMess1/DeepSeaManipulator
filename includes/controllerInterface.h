@@ -17,6 +17,8 @@ public:
 
 	//界面参数设置接口
 public:
+
+	virtual void resetAlgrithm() = 0;
 	virtual void OnClickedMoveRobotJoints(JointTheta jointTheta, double speed) = 0; //移动机械臂关节位置
 
 	virtual void OnBnClickedVisualAproachPosButton(Frame pos, double speed)=0; //逼近目标点 posotion_,eu_

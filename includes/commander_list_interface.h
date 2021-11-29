@@ -2,7 +2,7 @@
 #define _COMMANDER_LIST_INTERFACE_H
 #define ICOMMANDER_INTERFACE make_icommander_list()
 #include <string>
-
+class JointTheta;
 
 class Icommander_list
 {
@@ -15,7 +15,7 @@ public:
 
 	virtual int reportError(int error, std::string error_log)=0; //控制器向界面报告错误信息
 
-	virtual int sendPosCommander(double* pos_commander) = 0;//控制器向机械臂发送关节位置指令
+	virtual int sendPosCommander(bool servo,JointTheta pos_commander) = 0;//控制器向机械臂发送关节位置指令
 	virtual int stopDebug_resetAlgorithm() = 0; //控制器向界面发送停止控制器算法指令
 	virtual int sendPosOffset(double *offset) = 0;//发送位置控制误差
 	virtual int sendPosOffset_error(int Joint_Index) = 0;//发送位置控制误差过大错误

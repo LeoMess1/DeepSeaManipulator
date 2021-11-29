@@ -5,6 +5,7 @@
 
 #include "commander_list_interface.h"
 #include "mymodbus.h"
+#include "jointtheta.h"
 
 class commanderInterface:public Icommander_list
 {
@@ -20,7 +21,7 @@ public:
 
 	virtual int reportError(int error, std::string error_log); //控制器向界面报告错误信息
 
-	virtual int sendPosCommander(double* pos_commander) ;//控制器向机械臂发送关节位置指令
+    virtual int sendPosCommander(bool servo,JointTheta pos_commander) ;//控制器向机械臂发送关节位置指令
 	virtual int stopDebug_resetAlgorithm() ; //控制器向界面发送停止控制器算法指令
 	virtual int sendPosOffset(double *offset) ;//发送位置控制误差
 	virtual int sendPosOffset_error(int Joint_Index) ;//发送位置控制误差过大错误
