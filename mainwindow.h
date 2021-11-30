@@ -101,9 +101,6 @@ public slots:
     void readDataProcess(bool,quint16,QModbusReply *reply);
     void readRegesiterProcess(QModbusReply *replyRegister);
     void saveDataRead();
-    void saveDataToWrite(double[]);
-    void saveDataWritten(double[]);
-
 
     /***************************************************************
     ***************************camera²Ûº¯Êý***************************

@@ -28,8 +28,6 @@ public:
     double              current_joints_angles[6];
     bool                system_server                       =FALSE;
 
-
-
 signals:
     /******************子线程对主线程UI进行操作的信号***********************/
     void execButtonSetSignal(bool);       //执行按钮使能信号
@@ -45,7 +43,6 @@ signals:
     void getUi1SpinValue(int);
     void setL2SpinValue(int);
     void sendDataToProcess(bool,quint16,QModbusReply *reply);//发送反馈的数据给主线程处理
-    void saveWriteDataSignal(double[]);
     void sendRegisterData(QModbusReply *reply);
 
 
@@ -101,10 +98,9 @@ public slots:
     void readRegister();
     void saveDataToWrite(double[]);
     void saveDataWritten(double[]);
+    void changeTimer();
 
 private:
-
-
 
     /************************定时器常量*****************************/
     const int     TIMER_MASTER_VALVE                = 50;
@@ -121,10 +117,6 @@ private:
     const quint16 WRITE_INSTRUCTIONS_START_ADDRESS  = 0x4000;
     //    const quint16 JOINTS_SET_ENABLE_CLOSED_LOOP     = 0xc000;
 
-
-
-
-
     /**************************MODBUS*****************************/
     ModbusTcpClient    *modbusDevice;
 
@@ -139,14 +131,14 @@ private:
     QString           directory_data_written            = QStringLiteral("E:/QtWorkSpace/Work/DeepSeaManipulator/files/data_written.txt");
 
     /**************************相关计时器***************************/
-    QTimer            *timer_read_write_pool            = new QTimer(this);//只发送读指令
-    QTimer            *timer_read_write_register_test   = new QTimer(this);
     QTimer            *timer_three_point_1              = new QTimer(this);//发送到指定点P1
     QTimer            *timer_three_point_2              = new QTimer(this);//发送到指定点P2
     QTimer            *timer_three_point_3              = new QTimer(this);//发送到指定点P3
     QTimer            *timer_three_points               = new QTimer(this);//循环发送三个点
     QTimer            *timer_points_sequence            = new QTimer(this);//发送点序列
     QTimer            *timer_points_sequence_diverse    = new QTimer(this);//逆序发送点序列
+    QTimer            *timer_read_write_pool            = new QTimer(this);//只发送读指令
+    QTimer            *timer_read_write_register_test   = new QTimer(this);
 
     QStringList       three_points_string_list;
     QStringList       line_points;

@@ -221,7 +221,6 @@ void MainWindow::modbusInit()
     //子线程发送数据到主线程
     connect(myModbus,&MyModbus::sendDataToProcess,this,&MainWindow::readDataProcess,Qt::QueuedConnection);
     connect(myModbus,&MyModbus::sendRegisterData,this,&MainWindow::readRegesiterProcess,Qt::QueuedConnection);
-    connect(myModbus,&MyModbus::saveWriteDataSignal,this,&MainWindow::saveDataToWrite,Qt::QueuedConnection);
 
     //主线程发送数据到子线程
     connect(this,&MainWindow::sendThreePointList,myModbus,&MyModbus::getThreePointList);
@@ -294,9 +293,10 @@ void MainWindow::controllerInit()
             QStringList thetaList =  points_to_plan.split(" ");
 
             JointTheta theta;
-            //double speed = 1;
+
             double speed = lineEdit_jointsSpeed->text().toDouble();
             speed = speed/10.0;
+
             theta.theta1_ = thetaList.at(0).toDouble();
             theta.theta2_ = thetaList.at(1).toDouble();
             theta.theta3_ = thetaList.at(2).toDouble();
@@ -304,7 +304,8 @@ void MainWindow::controllerInit()
             theta.theta5_ = thetaList.at(4).toDouble();
             theta.theta6_ = thetaList.at(5).toDouble();
 
-            CONTROLLER_INTERFACE->OnClickedMoveRobotJoints(theta,speed);
+            myController->start_trajectory_plan(theta,speed);
+
         }
     });
 }
@@ -572,21 +573,21 @@ void MainWindow::readRegesiterProcess(QModbusReply *replyRegister)
             label_joint_5_status_value->setText(QString::number(receiveData.mid(20).toHex().toInt(&ok,16)));
             label_joint_5_status_pressure_value->setText(QString::number(receiveData.mid(22,2).toHex().toInt(&ok,16)*0.01)+QStringLiteral("°"));
             label_joint_6_status_value->setText(QString::number(receiveData.mid(24,2).toHex().toInt(&ok,16)));
-//            label_joint_6_status_pressure_value->setText(QString::number(receiveData.mid(26,2).toHex().toInt(&ok,16)*0.01)+QStringLiteral("°"));
+            //            label_joint_6_status_pressure_value->setText(QString::number(receiveData.mid(26,2).toHex().toInt(&ok,16)*0.01)+QStringLiteral("°"));
             label_joint_6_status_pressure_value->setText(QString::number(flushfff++,10,5));
             //这里没有当前角度值，不能更新
 
-//            JointTheta jointTheta;
-//            bool sysStatusSentToPlan = false;
+            //            JointTheta jointTheta;
+            //            bool sysStatusSentToPlan = false;
 
-//            current_joints_angles[0] = jointTheta.theta1_;
-//            current_joints_angles[1] = jointTheta.theta2_;
-//            current_joints_angles[2] = jointTheta.theta3_;
-//            current_joints_angles[3] = jointTheta.theta4_;
-//            current_joints_angles[4] = jointTheta.theta5_;
-//            current_joints_angles[5] = jointTheta.theta6_;
+            //            current_joints_angles[0] = jointTheta.theta1_;
+            //            current_joints_angles[1] = jointTheta.theta2_;
+            //            current_joints_angles[2] = jointTheta.theta3_;
+            //            current_joints_angles[3] = jointTheta.theta4_;
+            //            current_joints_angles[4] = jointTheta.theta5_;
+            //            current_joints_angles[5] = jointTheta.theta6_;
 
-//            CONTROLLER_INTERFACE->updateRobotJointTheta(sysStatusSentToPlan,jointTheta);
+            //            CONTROLLER_INTERFACE->updateRobotJointTheta(sysStatusSentToPlan,jointTheta);
         }
     }
 }
@@ -594,16 +595,15 @@ void MainWindow::readRegesiterProcess(QModbusReply *replyRegister)
 void MainWindow::saveDataRead()
 {
     QTime current_time =QTime::currentTime();
-    //    int hour = current_time.hour();//当前的小时
-    QString hourString = QString::number(current_time.hour());
-    //    int minute = current_time.minute();//当前的分
-    QString minuteString = QString::number(current_time.minute());
-    //    int second = current_time.second();//当前的秒
-    QString secondString = QString::number(current_time.second());
-    //    int msec = current_time.msec();//当前的毫秒
-    QString msecString = QString::number(current_time.msec());
+    //    QString hourString = QString::number(current_time.hour());
+    QString hourString = QString("%1").arg(current_time.hour(), 2, 10, QChar('0'));
+    //    QString minuteString = QString::number(current_time.minute());
+    QString minuteString = QString("%1").arg(current_time.minute(), 2, 10, QChar('0'));
+    //    QString secondString = QString::number(current_time.second());
+    QString secondString = QString("%1").arg(current_time.second(), 2, 10, QChar('0'));
+    //    QString msecString = QString::number(current_time.msec());
+    QString msecString = QString("%1").arg(current_time.msec(), 3, 10, QChar('0'));
 
-    //    qDebug()<<hour<<":"<<minute<<":"<<second<<":"<<msec;
     QString time = hourString+":"+minuteString+":"+secondString+":"+msecString +" data read : ";
 
     if(!directory_data_read.isEmpty())
@@ -618,96 +618,11 @@ void MainWindow::saveDataRead()
                     && label_joint_5_status_angle_value->text() != NULL&& label_joint_6_status_angle_value->text() != NULL)
             {
                 QString txtSaveString;
-                txtSaveString = time + "\t" + label_joint_1_status_angle_value->text() + "\t"
-                        + label_joint_2_status_angle_value->text() + "\t" + label_joint_3_status_angle_value->text()
-                        + "\t" + label_joint_4_status_angle_value->text()+ "\t" + label_joint_5_status_angle_value->text()
-                        + "\t" + label_joint_6_status_angle_value->text();
-                out << txtSaveString << Qt::endl;
-            }
-        }
-        file.close();
-    }
-    else
-    {
-        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
-        return;
-    }
-}
-
-void MainWindow::saveDataToWrite(double *write_data)
-{
-    double a[6];
-    memcpy(a,write_data,sizeof(double)*6);
-
-    QTime current_time =QTime::currentTime();
-    //    int hour = current_time.hour();//当前的小时
-    QString hourString = QString::number(current_time.hour());
-    //    int minute = current_time.minute();//当前的分
-    QString minuteString = QString::number(current_time.minute());
-    //    int second = current_time.second();//当前的秒
-    QString secondString = QString::number(current_time.second());
-    //    int msec = current_time.msec();//当前的毫秒
-    QString msecString = QString::number(current_time.msec());
-
-    //    qDebug()<<hour<<":"<<minute<<":"<<second<<":"<<msec;
-    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data to write : ";
-
-    if(!directory_save_trajectory.isEmpty())
-    {
-        //存储传感器数据到文本中
-        QFile file(directory_save_trajectory);
-        if(file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text))
-        {
-            QTextStream out(&file);
-            if(write_data!=NULL)
-            {
-                QString txtSaveString;
-                txtSaveString = time + "\t" + QString::number(write_data[0]) + "\t" + QString::number(write_data[1],10,2) + "\t"
-                        + QString::number(write_data[2],10,2) + "\t" + QString::number(write_data[3],10,2)+ "\t"
-                        + QString::number(write_data[4],10,2) + "\t" + QString::number(write_data[5],10,2);
-                out << txtSaveString << Qt::endl;
-            }
-        }
-        file.close();
-    }
-    else
-    {
-        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
-        return;
-    }
-}
-
-void MainWindow::saveDataWritten(double *write_data)
-{
-    double a[6];
-    memcpy(a,write_data,sizeof(double)*6);
-
-    QTime current_time =QTime::currentTime();
-    //    int hour = current_time.hour();//当前的小时
-    QString hourString = QString::number(current_time.hour());
-    //    int minute = current_time.minute();//当前的分
-    QString minuteString = QString::number(current_time.minute());
-    //    int second = current_time.second();//当前的秒
-    QString secondString = QString::number(current_time.second());
-    //    int msec = current_time.msec();//当前的毫秒
-    QString msecString = QString::number(current_time.msec());
-
-    //    qDebug()<<hour<<":"<<minute<<":"<<second<<":"<<msec;
-    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data written : ";
-
-    if(!directory_save_trajectory.isEmpty())
-    {
-        //存储传感器数据到文本中
-        QFile file(directory_save_trajectory);
-        if(file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text))
-        {
-            QTextStream out(&file);
-            if(write_data!=NULL)
-            {
-                QString txtSaveString;
-                txtSaveString = time + "\t" + QString::number(write_data[0]) + "\t" + QString::number(write_data[1],10,2) + "\t"
-                        + QString::number(write_data[2],10,2) + "\t" + QString::number(write_data[3],10,2)+ "\t"
-                        + QString::number(write_data[4],10,2) + "\t" + QString::number(write_data[5],10,2);
+                //空格在txt文档中复制到excel里不会切换单元格，用"\t"可以切换到下一单元格
+                txtSaveString = time + "speed:" + "\t" + lineEdit_jointsSpeed->text() + "\t"
+                        + label_joint_1_status_angle_value->text() + "\t" + label_joint_2_status_angle_value->text()
+                        + "\t" + label_joint_3_status_angle_value->text() + "\t" + label_joint_4_status_angle_value->text()
+                        + "\t" + label_joint_5_status_angle_value->text() + "\t" + label_joint_6_status_angle_value->text();
                 out << txtSaveString << Qt::endl;
             }
         }

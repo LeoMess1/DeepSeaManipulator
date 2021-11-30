@@ -12,14 +12,16 @@
 class MyController : public QObject
 {
     Q_OBJECT
-    void startTrajectoryPlan();
 
 public:
     explicit MyController(QObject *parent = nullptr);
 
-    void startTrajectoryPlan(JointTheta theta, double speed);
+    void start_trajectory_plan(JointTheta jointTheta, double speed);
 
 signals:
+
+private:
+
 
 };
 

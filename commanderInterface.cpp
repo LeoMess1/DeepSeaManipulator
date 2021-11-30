@@ -46,6 +46,15 @@ int commanderInterface::displayCalibrationPosIndex(int num_Index)
 int commanderInterface::reportError(int error, std::string error_log)
 {
     CONTROLLER_INTERFACE->resetAlgrithm();
+    if(error == 617)
+    {
+     //   myModbus_->changeTimer();
+//        if(myModbus_->timer_read_write_pool->isActive())
+//            myModbus_->timer_read_write_pool->stop();
+//        if(!myModbus_->timer_read_write_register_test->isActive())
+//            myModbus_->timer_read_write_register_test->start(5);
+    }
+
     return 0;
 }
 

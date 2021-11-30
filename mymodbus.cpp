@@ -132,11 +132,11 @@ int jishu = 0;
 void MyModbus::masterValveEnable()
 {
     master_valve_flag = 0x0001;
-    //    if(timer_read_write_register_test->isActive())
-    //        timer_read_write_register_test->stop();
+        if(timer_read_write_register_test->isActive())
+            timer_read_write_register_test->stop();
 
-    //    if(!timer_read_write_pool->isActive())
-    //        timer_read_write_pool->start(TIMER_READ_WRITE_POOL);
+        if(!timer_read_write_pool->isActive())
+            timer_read_write_pool->start(TIMER_READ_WRITE_POOL);
 }
 
 //
@@ -144,25 +144,25 @@ void MyModbus::masterValveUnable()
 {
     master_valve_flag = 0x0000;
     //    static int i = 0;
-    //    if(jishu>0)
-    //   {
-    //    if(timer_read_write_pool->isActive())
-    //        timer_read_write_pool->stop();
+        if(1/*jishu>0*/)
+       {
+        if(timer_read_write_pool->isActive())
+            timer_read_write_pool->stop();
 
-    //    if(!timer_read_write_register_test->isActive())
-    //        timer_read_write_register_test->start(TIMER_READ_WRITE_POOL);
-    //    }
-    //    else
-    //    {
-    //        if(timer_read_write_register_test->isActive())
-    //            timer_read_write_register_test->stop();
+        if(!timer_read_write_register_test->isActive())
+            timer_read_write_register_test->start(TIMER_READ_WRITE_POOL);
+        }
+        else
+        {
+            if(timer_read_write_register_test->isActive())
+                timer_read_write_register_test->stop();
 
-    //        if(!timer_read_write_pool->isActive())
-    //            timer_read_write_pool->start(TIMER_READ_WRITE_POOL);
+            if(!timer_read_write_pool->isActive())
+                timer_read_write_pool->start(TIMER_READ_WRITE_POOL);
 
-    //    }
+        }
 
-    //    jishu++;
+        jishu++;
 
 
 
@@ -440,7 +440,7 @@ void MyModbus::moveToPoint(QByteArray pduData)
         QString::number(pduData.mid(29,2).toHex().toInt(&ok,16)*0.01).toDouble()
     };
 
-//    emit saveWriteDataSignal(" data written : ",&dataWritten[0]);
+    //    emit saveWriteDataSignal(" data written : ",&dataWritten[0]);
     saveDataWritten(dataWritten);
 }
 
@@ -862,12 +862,12 @@ void MyModbus::saveDataToWrite(double *data_to_write)
     memcpy(a,data_to_write,sizeof(double)*6);
 
     QTime current_time =QTime::currentTime();
-    QString hourString = QString::number(current_time.hour());
-    QString minuteString = QString::number(current_time.minute());
-    QString secondString = QString::number(current_time.second());
-    QString msecString = QString::number(current_time.msec());
+    QString hourString = QString("%1").arg(current_time.hour(), 2, 10, QChar('0'));
+    QString minuteString = QString("%1").arg(current_time.minute(), 2, 10, QChar('0'));
+    QString secondString = QString("%1").arg(current_time.second(), 2, 10, QChar('0'));
+    QString msecString = QString("%1").arg(current_time.msec(), 3, 10, QChar('0'));
 
-    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data to write : ";
+    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data to write :";
 
     if(!directpry_data_to_write.isEmpty())
     {
@@ -879,6 +879,7 @@ void MyModbus::saveDataToWrite(double *data_to_write)
             if(data_to_write!=NULL)
             {
                 QString txtSaveString;
+                //空格在txt文档中复制到excel里不会切换单元格，用"\t"可以切换到下一单元格
                 txtSaveString = time + "\t" + QString::number(data_to_write[0]) + "\t" + QString::number(data_to_write[1],10,2) + "\t"
                         + QString::number(data_to_write[2],10,2) + "\t" + QString::number(data_to_write[3],10,2)+ "\t"
                         + QString::number(data_to_write[4],10,2) + "\t" + QString::number(data_to_write[5],10,2);
@@ -889,7 +890,7 @@ void MyModbus::saveDataToWrite(double *data_to_write)
     }
     else
     {
-//        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
+        //        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
         return;
     }
 }
@@ -900,12 +901,12 @@ void MyModbus::saveDataWritten(double *data_written)
     memcpy(a,data_written,sizeof(double)*6);
 
     QTime current_time =QTime::currentTime();
-    QString hourString = QString::number(current_time.hour());
-    QString minuteString = QString::number(current_time.minute());
-    QString secondString = QString::number(current_time.second());
-    QString msecString = QString::number(current_time.msec());
+    QString hourString = QString("%1").arg(current_time.hour(), 2, 10, QChar('0'));
+    QString minuteString = QString("%1").arg(current_time.minute(), 2, 10, QChar('0'));
+    QString secondString = QString("%1").arg(current_time.second(), 2, 10, QChar('0'));
+    QString msecString = QString("%1").arg(current_time.msec(), 3, 10, QChar('0'));
 
-    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data written : ";
+    QString time = hourString+":"+minuteString+":"+secondString+":"+msecString + " data written :";
 
     if(!directory_data_written.isEmpty())
     {
@@ -917,6 +918,7 @@ void MyModbus::saveDataWritten(double *data_written)
             if(data_written!=NULL)
             {
                 QString txtSaveString;
+                //空格在txt文档中复制到excel里不会切换单元格，用"\t"可以切换到下一单元格
                 txtSaveString = time + "\t" + QString::number(data_written[0]) + "\t" + QString::number(data_written[1],10,2) + "\t"
                         + QString::number(data_written[2],10,2) + "\t" + QString::number(data_written[3],10,2)+ "\t"
                         + QString::number(data_written[4],10,2) + "\t" + QString::number(data_written[5],10,2);
@@ -927,7 +929,15 @@ void MyModbus::saveDataWritten(double *data_written)
     }
     else
     {
-//        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
+        //        QMessageBox::information(this,tr("this is information dialog"),QStringLiteral("文件目录无法打开"));
         return;
     }
+}
+
+void MyModbus::changeTimer()
+{
+    if(timer_read_write_pool->isActive())
+        timer_read_write_pool->stop();
+    if(!timer_read_write_register_test->isActive())
+        timer_read_write_register_test->start(MyModbus::TIMER_READ_WRITE_POOL);
 }
